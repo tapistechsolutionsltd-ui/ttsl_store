@@ -1,0 +1,47 @@
+name: Deploy to store.ttsolutionspng.com
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    name: Trigger cPanel Git Pull & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger cPanel Git Version Control deployment
+        env:
+          CPANEL_USERNAME: ${{ secrets.CPANEL_USERNAME }}
+          CPANEL_API_TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
+          CPANEL_HOSTNAME: ${{ secrets.CPANEL_HOSTNAME }}
+          CPANEL_REPO_PATH: ${{ secrets.CPANEL_REPO_PATH }}
+        run: |
+          echo "Deploying to store.ttsolutionspng.com..."
+
+          RESPONSE=$(curl -s -G \
+            --data-urlencode "repository_root=${CPANEL_REPO_PATH}" \
+            -H "Authorization: cpanel ${CPANEL_USERNAME}:${CPANEL_API_TOKEN}" \
+            -w "\n%{http_code}" \
+            "https://${CPANEL_HOSTNAME}:2083/execute/VersionControl/update")
+
+          HTTP_STATUS=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          echo "--- cPanel Response ---"
+          echo "$BODY"
+          echo "-----------------------"
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "ERROR: cPanel API returned HTTP $HTTP_STATUS"
+            exit 1
+          fi
+
+          if echo "$BODY" | grep -q '"status":0'; then
+            echo "ERROR: cPanel reported a deployment failure"
+            exit 1
+          fi
+
+          echo "SUCCESS: Deployment triggered on cPanel!"

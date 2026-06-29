@@ -1,0 +1,23 @@
+---
+deployment:
+  tasks:
+    # Install PHP dependencies (no dev, optimised autoloader)
+    - /usr/local/bin/php /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction 2>&1
+
+    # Put site in maintenance mode (ignore failure on first deploy)
+    - /usr/local/bin/php artisan down --render="errors::503" 2>&1 || true
+
+    # Ensure storage symlink exists
+    - /usr/local/bin/php artisan storage:link --force 2>&1 || true
+
+    # Clear then rebuild config/route/view caches
+    - /usr/local/bin/php artisan config:clear 2>&1
+    - /usr/local/bin/php artisan config:cache 2>&1
+    - /usr/local/bin/php artisan route:cache 2>&1
+    - /usr/local/bin/php artisan view:cache 2>&1
+
+    # Run any pending migrations
+    - /usr/local/bin/php artisan migrate --force 2>&1
+
+    # Bring site back online
+    - /usr/local/bin/php artisan up 2>&1

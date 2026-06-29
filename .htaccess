@@ -1,0 +1,5 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^$ local/ [L]
+    RewriteRule (.*) local/$1 [L]
+</IfModule>
