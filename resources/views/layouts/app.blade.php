@@ -25,7 +25,7 @@
 
             {{-- Logo --}}
             <a href="{{ route('home') }}" class="flex-shrink-0">
-                <img src="{{ asset('images/logo_white.png') }}" alt="TTSolutions Limited"
+                <img src="{{ asset('images/ttsolutions_logo.png') }}" alt="TTSolutions Limited"
                      class="w-auto object-contain" style="height: 46px;">
             </a>
 
@@ -45,15 +45,20 @@
             <form action="{{ route('shop') }}" method="GET"
                   class="hidden sm:flex flex-1 rounded-md overflow-hidden min-w-0 shadow-sm">
                 {{-- Category selector (md+) --}}
-                <select name="category"
-                    class="hidden md:block bg-gray-200 text-gray-700 text-xs px-2 border-r border-gray-300 focus:outline-none flex-shrink-0 max-w-[7rem] cursor-pointer">
-                    <option value="">All</option>
-                    @foreach(\App\Models\Category::where('status', true)->orderBy('sort_order')->get() as $scat)
-                        <option value="{{ $scat->slug }}" {{ request('category') === $scat->slug ? 'selected' : '' }}>
-                            {{ Str::limit($scat->name, 18) }}
-                        </option>
-                    @endforeach
-                </select>
+                <div class="hidden md:flex items-stretch relative flex-shrink-0 max-w-[7rem] bg-gray-200 border-r border-gray-300">
+                    <select name="category"
+                        class="appearance-none h-full w-full bg-transparent text-gray-700 text-xs pl-2 pr-5 focus:outline-none cursor-pointer">
+                        <option value="">All</option>
+                        @foreach(\App\Models\Category::where('status', true)->orderBy('sort_order')->get() as $scat)
+                            <option value="{{ $scat->slug }}" {{ request('category') === $scat->slug ? 'selected' : '' }}>
+                                {{ Str::limit($scat->name, 18) }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <svg class="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </div>
                 <input type="text" name="q" value="{{ request('q') }}"
                     placeholder="Search products, brands, categories..."
                     class="flex-1 px-3 py-2.5 text-gray-800 text-sm focus:outline-none bg-white min-w-0" />
@@ -459,7 +464,7 @@
 
             {{-- Brand info --}}
             <div class="col-span-2 md:col-span-1">
-                <img src="{{ asset('images/logo_white.png') }}" alt="TTSolutions Limited"
+                <img src="{{ asset('images/ttsolutions_logo.png') }}" alt="TTSolutions Limited"
                      class="w-auto object-contain mb-4" style="height: 51px;">
                 <p class="text-gray-400 text-sm leading-relaxed mb-4">
                     Transforming Ideas into Powerful Digital Solutions Across Papua New Guinea.
@@ -531,7 +536,7 @@
         <div class="max-w-screen-2xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500">
             <span>&copy; {{ date('Y') }} TTSolutions Limited (TTSL). All rights reserved.</span>
             <div class="hidden sm:flex items-center gap-1">
-                <img src="{{ asset('images/logo_white.png') }}" alt="" class="w-auto opacity-70" style="height: 21px;">
+                <img src="{{ asset('images/ttsolutions_logo.png') }}" alt="" class="w-auto opacity-70" style="height: 21px;">
                 <span>TTSolutions Limited &mdash; Keeping You Connected.</span>
             </div>
         </div>

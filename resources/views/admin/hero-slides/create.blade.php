@@ -14,7 +14,7 @@
 </div>
 
 <form method="POST" action="{{ route('admin.hero-slides.store') }}" enctype="multipart/form-data"
-      x-data="heroSlideForm()" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      x-data="heroSlideForm()" @submit.prevent="submitForm($event)" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     @csrf
 
     {{-- Left column: main settings --}}
@@ -103,7 +103,7 @@
                 </svg>
                 Background Image / Video
             </h3>
-            <p class="text-xs text-gray-400 mb-4">Recommended: 1920×600px or wider. Supports JPG, PNG, WebP, GIF or MP4 (max 20 MB). MP4 videos autoplay, loop and are muted. Leave empty to use background colour instead.</p>
+            <p class="text-xs text-gray-400 mb-4">Recommended: 1920×600px or wider. Supports JPG, PNG, WebP, GIF or MP4 (max 50 MB). MP4 videos autoplay, loop and are muted. Leave empty to use background colour instead.</p>
 
             <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-brand transition-colors cursor-pointer"
                  @click="$refs.imageInput.click()">
@@ -113,7 +113,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                         </svg>
                         <p class="text-sm text-gray-500">Click to upload hero image or video</p>
-                        <p class="text-xs text-gray-400 mt-1">JPEG, PNG, WebP, GIF, MP4 — max 20 MB</p>
+                        <p class="text-xs text-gray-400 mt-1">JPEG, PNG, WebP, GIF, MP4 — max 50 MB</p>
                     </div>
                 </template>
                 <template x-if="imagePreview && !isVideoPreview">
@@ -209,11 +209,27 @@
             </div>
         </div>
 
-        <button type="submit" class="btn-primary w-full flex items-center justify-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <template x-if="uploadError">
+            <div class="alert-error text-sm" x-text="uploadError"></div>
+        </template>
+
+        <template x-if="uploading">
+            <div class="space-y-1">
+                <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div class="h-full bg-brand transition-all duration-150" :style="`width: ${uploadProgress}%`"></div>
+                </div>
+                <p class="text-xs text-gray-500 text-center" x-text="uploadProgress < 100 ? `Uploading… ${uploadProgress}%` : 'Finishing up…'"></p>
+            </div>
+        </template>
+
+        <button type="submit" class="btn-primary w-full flex items-center justify-center gap-2" :disabled="uploading">
+            <svg x-show="!uploading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
-            Create Slide
+            <svg x-show="uploading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            <span x-text="uploading ? 'Saving…' : 'Create Slide'"></span>
         </button>
     </div>
 
@@ -227,18 +243,69 @@ function heroSlideForm() {
         isVideoPreview: false,
         overlayOpacity: {{ old('overlay_opacity', 40) }},
         badgeColor: '{{ old('badge_color', '#f59e0b') }}',
+        objectUrl: null,
+        uploading: false,
+        uploadProgress: 0,
+        uploadError: null,
         previewImage(event) {
             const file = event.target.files[0];
             if (!file) return;
+            if (this.objectUrl) URL.revokeObjectURL(this.objectUrl);
             this.isVideoPreview = file.type.startsWith('video/');
-            const reader = new FileReader();
-            reader.onload = e => this.imagePreview = e.target.result;
-            reader.readAsDataURL(file);
+            this.objectUrl = URL.createObjectURL(file);
+            this.imagePreview = this.objectUrl;
         },
         clearPreview() {
+            if (this.objectUrl) URL.revokeObjectURL(this.objectUrl);
+            this.objectUrl = null;
             this.imagePreview = null;
             this.isVideoPreview = false;
             this.$refs.imageInput.value = '';
+        },
+        submitForm(event) {
+            if (this.uploading) return;
+            this.uploading = true;
+            this.uploadProgress = 0;
+            this.uploadError = null;
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const xhr = new XMLHttpRequest();
+
+            xhr.open('POST', form.action, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.setRequestHeader('Accept', 'application/json');
+
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    this.uploadProgress = Math.round((e.loaded / e.total) * 100);
+                }
+            });
+
+            xhr.onload = () => {
+                this.uploading = false;
+                let data = {};
+                try { data = JSON.parse(xhr.responseText); } catch (e) {}
+
+                if (xhr.status >= 200 && xhr.status < 300 && data.redirect) {
+                    window.location.href = data.redirect;
+                } else if (xhr.status === 422) {
+                    if (data.errors) {
+                        this.uploadError = Object.values(data.errors).flat().join(' ');
+                    } else {
+                        this.uploadError = data.message || 'Validation failed. Please check your input.';
+                    }
+                } else {
+                    this.uploadError = data.message || ('Upload failed (server error ' + xhr.status + '). Please try again or use a smaller file.');
+                }
+            };
+
+            xhr.onerror = () => {
+                this.uploading = false;
+                this.uploadError = 'Network error during upload. Check your connection and try again.';
+            };
+
+            xhr.send(formData);
         }
     }
 }

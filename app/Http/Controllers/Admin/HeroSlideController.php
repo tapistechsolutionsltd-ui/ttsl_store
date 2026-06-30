@@ -32,7 +32,7 @@ class HeroSlideController extends Controller
             'button_url'             => 'nullable|string|max:255',
             'secondary_button_text'  => 'nullable|string|max:100',
             'secondary_button_url'   => 'nullable|string|max:255',
-            'image'                  => 'nullable|file|mimes:jpeg,png,jpg,webp,gif,mp4|max:20480',
+            'image'                  => 'nullable|file|mimes:jpeg,png,jpg,webp,gif,mp4|max:51200',
             'bg_color'               => 'nullable|string|max:30',
             'text_color'             => 'nullable|string|max:30',
             'overlay_opacity'        => 'nullable|integer|min:0|max:100',
@@ -46,13 +46,20 @@ class HeroSlideController extends Controller
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             if (!$file->isValid()) {
-                return back()->withInput()->with('error',
-                    'Upload failed: ' . $file->getErrorMessage() . ' Check the file size against the server upload limit.');
+                $message = 'Upload failed: ' . $file->getErrorMessage() . ' Check the file size against the server upload limit.';
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => $message], 422);
+                }
+                return back()->withInput()->with('error', $message);
             }
             $validated['image_path'] = $file->store('hero-slides', 'public');
         }
 
         HeroSlide::create($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json(['redirect' => route('admin.hero-slides.index')]);
+        }
 
         return redirect()->route('admin.hero-slides.index')
             ->with('success', 'Hero slide created successfully.');
@@ -75,7 +82,7 @@ class HeroSlideController extends Controller
             'button_url'             => 'nullable|string|max:255',
             'secondary_button_text'  => 'nullable|string|max:100',
             'secondary_button_url'   => 'nullable|string|max:255',
-            'image'                  => 'nullable|file|mimes:jpeg,png,jpg,webp,gif,mp4|max:20480',
+            'image'                  => 'nullable|file|mimes:jpeg,png,jpg,webp,gif,mp4|max:51200',
             'remove_image'           => 'nullable|boolean',
             'bg_color'               => 'nullable|string|max:30',
             'text_color'             => 'nullable|string|max:30',
@@ -94,8 +101,11 @@ class HeroSlideController extends Controller
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             if (!$file->isValid()) {
-                return back()->withInput()->with('error',
-                    'Upload failed: ' . $file->getErrorMessage() . ' Check the file size against the server upload limit.');
+                $message = 'Upload failed: ' . $file->getErrorMessage() . ' Check the file size against the server upload limit.';
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => $message], 422);
+                }
+                return back()->withInput()->with('error', $message);
             }
             if ($heroSlide->image_path) {
                 Storage::disk('public')->delete($heroSlide->image_path);
@@ -104,6 +114,10 @@ class HeroSlideController extends Controller
         }
 
         $heroSlide->update($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json(['redirect' => route('admin.hero-slides.index')]);
+        }
 
         return redirect()->route('admin.hero-slides.index')
             ->with('success', 'Hero slide updated successfully.');
