@@ -162,7 +162,7 @@ class SettingController extends Controller
                 'storeEmail'   => $storeEmail,
                 'storeWebsite' => $storeWebsite,
                 'logoUrl'      => $appUrl . '/images/Logo.png',
-                'logoUrlWhite' => $appUrl . '/images/Logo_white.png',
+                'logoUrlWhite' => $appUrl . '/images/logo_white.png',
                 'senderName'   => 'Admin Test',
                 'senderEmail'  => $to,
                 'subject'      => 'SMTP Configuration Test',

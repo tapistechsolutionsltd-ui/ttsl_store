@@ -89,7 +89,7 @@ class HomeController extends Controller
 
         $appUrl      = rtrim(config('app.url'), '/');
         $logoUrl      = $appUrl . '/images/Logo.png';
-        $logoUrlWhite = $appUrl . '/images/Logo_white.png';
+        $logoUrlWhite = $appUrl . '/images/logo_white.png';
 
         $sharedData = [
             'storeName'    => $storeName,

@@ -44,7 +44,12 @@ class HeroSlideController extends Controller
         $validated['sort_order'] = $validated['sort_order'] ?? HeroSlide::max('sort_order') + 1;
 
         if ($request->hasFile('image')) {
-            $validated['image_path'] = $request->file('image')->store('hero-slides', 'public');
+            $file = $request->file('image');
+            if (!$file->isValid()) {
+                return back()->withInput()->with('error',
+                    'Upload failed: ' . $file->getErrorMessage() . ' Check the file size against the server upload limit.');
+            }
+            $validated['image_path'] = $file->store('hero-slides', 'public');
         }
 
         HeroSlide::create($validated);
@@ -87,10 +92,15 @@ class HeroSlideController extends Controller
         }
 
         if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            if (!$file->isValid()) {
+                return back()->withInput()->with('error',
+                    'Upload failed: ' . $file->getErrorMessage() . ' Check the file size against the server upload limit.');
+            }
             if ($heroSlide->image_path) {
                 Storage::disk('public')->delete($heroSlide->image_path);
             }
-            $validated['image_path'] = $request->file('image')->store('hero-slides', 'public');
+            $validated['image_path'] = $file->store('hero-slides', 'public');
         }
 
         $heroSlide->update($validated);

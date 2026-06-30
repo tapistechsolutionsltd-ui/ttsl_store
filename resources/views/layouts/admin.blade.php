@@ -38,7 +38,7 @@
            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
 
         <div class="p-4 border-b border-white/10">
-            <img src="{{ asset('images/Logo_white.png') }}" alt="TTSolutions Limited" class="w-auto object-contain" style="height: 46px;">
+            <img src="{{ asset('images/logo_white.png') }}" alt="TTSolutions Limited" class="w-auto object-contain" style="height: 46px;">
             <div class="text-xs text-blue-300 mt-1 pl-0.5">Admin Panel</div>
         </div>
 

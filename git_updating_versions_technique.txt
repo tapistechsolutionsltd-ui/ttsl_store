@@ -1,0 +1,24 @@
+Github is now connected to TTSL Store. To update changes in Laravel App
+you simple do this: 
+Login to cPanel
+---------------------------
+Bash:
+cd /home/ttsobtji/store.ttsolutionspng.com
+git pull origin master
+
+Pulling future updates you may also need:
+--------------------------------------
+Bash: 
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+
+Then clear cache:
+------------------------------------------
+php artisan optimize:clear
+php artisan optimize
+
+For frontend changes:
+-------------------------------
+Bash:
+npm install 
+npm run build
