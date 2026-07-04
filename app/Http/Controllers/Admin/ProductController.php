@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\CppPromotion;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Http\Request;
@@ -43,7 +44,8 @@ class ProductController extends Controller
     {
         $categories = Category::where('status', true)->get();
         $brands     = Brand::where('status', true)->get();
-        return view('admin.products.create', compact('categories', 'brands'));
+        $promotions = CppPromotion::orderBy('title')->get();
+        return view('admin.products.create', compact('categories', 'brands', 'promotions'));
     }
 
     public function store(Request $request)
@@ -60,12 +62,21 @@ class ProductController extends Controller
             'development_duration'=> 'nullable|string|max:50',
             'images.*'            => 'nullable|image|mimes:jpeg,jpg,png,webp,gif|max:4096',
             'preview_zip'         => 'nullable|file|mimes:zip|max:51200',
+            'cpp_promotion_id'    => 'nullable|exists:cpp_promotions,id',
+            'cpp_badge_text'      => 'nullable|string|max:100',
+            'cpp_priority'        => 'nullable|integer|min:0',
+            'cpp_description'     => 'nullable|string|max:1000',
         ]);
 
         $data = $request->only(['name', 'category_id', 'brand_id', 'description', 'price', 'sale_price', 'stock', 'status', 'development_duration']);
         $data['slug']     = Str::slug($request->name) . '-' . Str::random(4);
         $data['sku']      = 'NGS-' . strtoupper(Str::random(8));
         $data['featured'] = $request->boolean('featured');
+        $data['cpp_enabled']       = $request->boolean('cpp_enabled');
+        $data['cpp_promotion_id']  = $request->cpp_promotion_id;
+        $data['cpp_badge_text']    = $request->cpp_badge_text;
+        $data['cpp_priority']      = $request->cpp_priority ?? 0;
+        $data['cpp_description']   = $request->cpp_description;
 
         if ($request->filled('specifications')) {
             $specs = [];
@@ -110,7 +121,8 @@ class ProductController extends Controller
         $product->load('images');
         $categories = Category::where('status', true)->get();
         $brands     = Brand::where('status', true)->get();
-        return view('admin.products.edit', compact('product', 'categories', 'brands'));
+        $promotions = CppPromotion::orderBy('title')->get();
+        return view('admin.products.edit', compact('product', 'categories', 'brands', 'promotions'));
     }
 
     public function update(Request $request, Product $product)
@@ -127,10 +139,19 @@ class ProductController extends Controller
             'development_duration'=> 'nullable|string|max:50',
             'images.*'            => 'nullable|image|mimes:jpeg,jpg,png,webp,gif|max:4096',
             'preview_zip'         => 'nullable|file|mimes:zip|max:51200',
+            'cpp_promotion_id'    => 'nullable|exists:cpp_promotions,id',
+            'cpp_badge_text'      => 'nullable|string|max:100',
+            'cpp_priority'        => 'nullable|integer|min:0',
+            'cpp_description'     => 'nullable|string|max:1000',
         ]);
 
         $data = $request->only(['name', 'category_id', 'brand_id', 'description', 'price', 'sale_price', 'stock', 'status', 'development_duration']);
         $data['featured'] = $request->boolean('featured');
+        $data['cpp_enabled']       = $request->boolean('cpp_enabled');
+        $data['cpp_promotion_id']  = $request->cpp_promotion_id;
+        $data['cpp_badge_text']    = $request->cpp_badge_text;
+        $data['cpp_priority']      = $request->cpp_priority ?? 0;
+        $data['cpp_description']   = $request->cpp_description;
 
         if ($request->filled('specifications')) {
             $specs = [];

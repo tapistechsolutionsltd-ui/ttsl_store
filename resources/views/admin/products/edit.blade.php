@@ -180,6 +180,37 @@
                         </label>
                     </div>
                 </div>
+                <div class="card p-5 border-2 border-dashed border-amber-200 bg-amber-50/30">
+                    <h2 class="font-bold text-gray-800 mb-4">Promotion</h2>
+                    <div class="space-y-3">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="cpp_enabled" value="1" {{ old('cpp_enabled', $product->cpp_enabled) ? 'checked' : '' }} class="rounded text-brand" />
+                            <span class="text-sm font-medium text-gray-700">Enable Promotion</span>
+                        </label>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Promotion Campaign</label>
+                            <select name="cpp_promotion_id" class="input-field">
+                                <option value="">None</option>
+                                @foreach($promotions as $promo)
+                                    <option value="{{ $promo->id }}" {{ old('cpp_promotion_id', $product->cpp_promotion_id) == $promo->id ? 'selected' : '' }}>{{ $promo->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Promotion Badge Text</label>
+                            <input type="text" name="cpp_badge_text" value="{{ old('cpp_badge_text', $product->cpp_badge_text) }}" placeholder="e.g. Limited Offer" class="input-field" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Promotion Priority</label>
+                            <input type="number" name="cpp_priority" value="{{ old('cpp_priority', $product->cpp_priority) }}" min="0" class="input-field" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Promotion Description</label>
+                            <textarea name="cpp_description" rows="2" class="input-field">{{ old('cpp_description', $product->cpp_description) }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="flex gap-3">
                     <button type="submit" class="btn-primary flex-1">Update Product</button>
                     <a href="{{ route('admin.products.index') }}" class="btn-secondary flex-1 text-center">Cancel</a>

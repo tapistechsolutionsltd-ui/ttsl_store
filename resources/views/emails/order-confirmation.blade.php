@@ -146,6 +146,22 @@
                     </tbody>
                 </table>
 
+                {{-- Promotion Code(s) --}}
+                @if($order->cppClients->isNotEmpty())
+                <div class="next-steps" style="background:#eff6ff;border-color:#bfdbfe;">
+                    <h4 style="color:#1d4ed8;">🎉 You Qualify for Our Client Promotions Portal!</h4>
+                    @foreach($order->cppClients as $cppClient)
+                        <p style="margin:0 0 10px;font-size:13px;color:#374151;">
+                            <strong>{{ $cppClient->promotion->title }}</strong><br>
+                            Promotion Code: <strong style="letter-spacing:1px;">{{ $cppClient->activeCode->code ?? 'Generating...' }}</strong><br>
+                            Keep this code safe — use it at
+                            <a href="{{ route('cpp.show', $cppClient->promotion) }}" style="color:#1d4ed8;">the Client Promotions Portal</a>
+                            to track your project's progress.
+                        </p>
+                    @endforeach
+                </div>
+                @endif
+
                 {{-- Payment Instructions --}}
                 @if($order->payment_method === 'bank_transfer')
                 <div class="payment-box">

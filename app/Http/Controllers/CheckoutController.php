@@ -9,6 +9,7 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Setting;
+use App\Services\Cpp\CppEnrollmentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -18,6 +19,8 @@ use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
+    public function __construct(private CppEnrollmentService $cppEnrollmentService) {}
+
     public function index()
     {
         $cart = Cart::where('user_id', auth()->id())
@@ -154,7 +157,7 @@ class CheckoutController extends Controller
             ]);
 
             foreach ($cart->items as $item) {
-                OrderItem::create([
+                $orderItem = OrderItem::create([
                     'order_id'    => $order->id,
                     'product_id'  => $item->product_id,
                     'product_name'=> $item->product->name,
@@ -166,6 +169,12 @@ class CheckoutController extends Controller
                 ]);
 
                 $item->product->decrement('stock', $item->quantity);
+
+                try {
+                    $this->cppEnrollmentService->enrollFromOrderItem($order, $orderItem);
+                } catch (\Throwable $e) {
+                    Log::error('CPP enrollment failed: ' . $e->getMessage());
+                }
             }
 
             if ($coupon) {
@@ -181,7 +190,7 @@ class CheckoutController extends Controller
 
         if ($newOrder) {
             try {
-                $newOrder->load('items.product');
+                $newOrder->load('items.product', 'cppClients.promotion', 'cppClients.activeCode');
 
                 $confirmEnabled = Setting::get('order_confirmation_enabled', '1') === '1';
                 $alertEnabled   = Setting::get('order_alert_enabled', '1') === '1';
@@ -208,7 +217,7 @@ class CheckoutController extends Controller
             return redirect()->route('home');
         }
 
-        $order = Order::with('items')->findOrFail($orderId);
+        $order = Order::with('items', 'cppClients.promotion', 'cppClients.activeCode')->findOrFail($orderId);
         return view('customer.order-success', compact('order'));
     }
 }

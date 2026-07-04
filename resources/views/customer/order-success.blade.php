@@ -66,6 +66,24 @@
         </div>
     </div>
 
+    @if($order->cppClients->isNotEmpty())
+        @foreach($order->cppClients as $cppClient)
+            <div class="card p-6 text-left mb-6 border-2 border-brand/20 bg-brand/5">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.364 1.118l1.519 4.674c.3.922-.755 1.688-1.539 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                    <h2 class="font-bold text-lg text-brand">Congratulations! You qualify for our promotion</h2>
+                </div>
+                <p class="text-gray-600 mb-3">Your order has qualified for the <strong>{{ $cppClient->promotion->title }}</strong> promotion.</p>
+                <div class="bg-white rounded-lg border border-brand/30 p-4 text-center mb-3">
+                    <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Your Promotion Code</p>
+                    <p class="text-2xl font-bold text-brand tracking-widest">{{ $cppClient->activeCode->code ?? 'Generating...' }}</p>
+                </div>
+                <p class="text-sm text-gray-500 mb-4">Please keep this code. Visit the Client Promotions Portal anytime to monitor your project's progress.</p>
+                <a href="{{ route('cpp.show', $cppClient->promotion) }}" class="btn-primary inline-block">View Promotion Portal</a>
+            </div>
+        @endforeach
+    @endif
+
     <div class="flex flex-wrap justify-center gap-4">
         <a href="{{ route('account.order.detail', $order) }}" class="btn-primary">Track My Project</a>
         <a href="{{ route('shop') }}" class="btn-secondary">Browse More Templates</a>

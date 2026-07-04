@@ -10,8 +10,15 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\Cpp\ClientController as AdminCppClientController;
+use App\Http\Controllers\Admin\Cpp\CodeController as AdminCppCodeController;
+use App\Http\Controllers\Admin\Cpp\DashboardController as AdminCppDashboardController;
+use App\Http\Controllers\Admin\Cpp\PromotionController as AdminCppPromotionController;
+use App\Http\Controllers\Admin\Cpp\ReportController as AdminCppReportController;
+use App\Http\Controllers\Admin\Cpp\SettingController as AdminCppSettingController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\CppPortalController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\SaveManController;
 use App\Http\Controllers\HomeController;
@@ -37,6 +44,14 @@ Route::post('/saveman/chat', [SaveManController::class, 'chat'])
 Route::get('/shop', [ShopController::class, 'index'])->name('shop');
 Route::get('/shop/category/{category:slug}', [ShopController::class, 'category'])->name('shop.category');
 Route::get('/shop/product/{product:slug}', [ShopController::class, 'product'])->name('shop.product');
+
+// Client Promotions Portal (public)
+Route::prefix('cpp')->name('cpp.')->group(function () {
+    Route::get('/', [CppPortalController::class, 'index'])->name('index');
+    Route::post('/search', [CppPortalController::class, 'search'])->name('search');
+    Route::get('/{promotion:slug}', [CppPortalController::class, 'show'])->name('show');
+    Route::get('/{promotion:slug}/statistics', [CppPortalController::class, 'statistics'])->name('statistics');
+});
 
 // Cart routes (auth required)
 Route::middleware('auth')->group(function () {
@@ -137,6 +152,33 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/reports/inventory', [ReportController::class, 'inventory'])->name('reports.inventory');
     Route::get('/reports/customers', [ReportController::class, 'customers'])->name('reports.customers');
     Route::get('/reports/customers/download', [ReportController::class, 'customersDownload'])->name('reports.customers.download');
+
+    // Client Promotions Portal (CPP)
+    Route::prefix('cpp')->name('cpp.')->group(function () {
+        Route::get('/', [AdminCppDashboardController::class, 'index'])->name('dashboard');
+
+        Route::resource('promotions', AdminCppPromotionController::class)->except(['show']);
+
+        Route::get('/clients', [AdminCppClientController::class, 'index'])->name('clients.index');
+        Route::get('/clients/{client}', [AdminCppClientController::class, 'show'])->name('clients.show');
+        Route::put('/clients/{client}', [AdminCppClientController::class, 'update'])->name('clients.update');
+        Route::post('/clients/{client}/timeline', [AdminCppClientController::class, 'updateTimeline'])->name('clients.timeline');
+        Route::patch('/clients/{client}/deactivate', [AdminCppClientController::class, 'deactivate'])->name('clients.deactivate');
+        Route::delete('/clients/{client}', [AdminCppClientController::class, 'destroy'])->name('clients.destroy');
+
+        Route::get('/codes', [AdminCppCodeController::class, 'index'])->name('codes.index');
+        Route::post('/codes/{client}/generate', [AdminCppCodeController::class, 'generate'])->name('codes.generate');
+        Route::patch('/codes/{code}/expire', [AdminCppCodeController::class, 'expire'])->name('codes.expire');
+        Route::patch('/codes/{code}/cancel', [AdminCppCodeController::class, 'cancel'])->name('codes.cancel');
+        Route::post('/codes/{code}/reassign', [AdminCppCodeController::class, 'reassign'])->name('codes.reassign');
+
+        Route::get('/reports/registrations', [AdminCppReportController::class, 'registrations'])->name('reports.registrations');
+        Route::get('/reports/registrations/download', [AdminCppReportController::class, 'registrationsDownload'])->name('reports.registrations.download');
+        Route::get('/reports/registrations/pdf', [AdminCppReportController::class, 'registrationsPdf'])->name('reports.registrations.pdf');
+
+        Route::get('/settings', [AdminCppSettingController::class, 'index'])->name('settings.index');
+        Route::post('/settings', [AdminCppSettingController::class, 'update'])->name('settings.update');
+    });
 });
 
 require __DIR__ . '/auth.php';

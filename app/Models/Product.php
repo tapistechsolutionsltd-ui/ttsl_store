@@ -15,6 +15,7 @@ class Product extends Model
         'specifications', 'price', 'sale_price', 'stock', 'featured',
         'meta_title', 'meta_description', 'status', 'development_duration',
         'preview_path', 'preview_entry',
+        'cpp_enabled', 'cpp_promotion_id', 'cpp_badge_text', 'cpp_priority', 'cpp_description',
     ];
 
     protected $casts = [
@@ -22,6 +23,8 @@ class Product extends Model
         'featured' => 'boolean',
         'price' => 'decimal:2',
         'sale_price' => 'decimal:2',
+        'cpp_enabled' => 'boolean',
+        'cpp_priority' => 'integer',
     ];
 
     protected static function boot()
@@ -70,6 +73,16 @@ class Product extends Model
     public function wishlistedByUsers()
     {
         return $this->belongsToMany(User::class, 'wishlists');
+    }
+
+    public function cppPromotion()
+    {
+        return $this->belongsTo(CppPromotion::class, 'cpp_promotion_id');
+    }
+
+    public function isCppEligible(): bool
+    {
+        return $this->cpp_enabled && $this->cppPromotion && $this->cppPromotion->isOpenForRegistration();
     }
 
     public function getCurrentPriceAttribute(): float

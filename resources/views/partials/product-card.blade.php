@@ -6,11 +6,21 @@
              class="w-full h-44 sm:h-48 object-contain p-3 group-hover:scale-105 transition-transform duration-300"
              loading="lazy"
              onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'" />
-        @if($product->is_on_sale)
-            <span class="absolute top-2 left-2 badge bg-accent text-white font-bold text-xs">
-                -{{ $product->discount_percentage }}%
-            </span>
-        @endif
+        <div class="absolute top-2 left-2 flex flex-col gap-1 items-start">
+            @if($product->is_on_sale)
+                <span class="badge bg-accent text-white font-bold text-xs">
+                    -{{ $product->discount_percentage }}%
+                </span>
+            @endif
+            @if($product->isCppEligible())
+                <span class="badge bg-purple-600 text-white text-xs font-bold">
+                    {{ $product->cpp_badge_text ?: 'PROMOTION' }}
+                </span>
+                @if($product->cppPromotion->max_clients && $product->cppPromotion->remainingSlots() <= 5)
+                    <span class="badge bg-red-500 text-white text-xs">Limited Offer</span>
+                @endif
+            @endif
+        </div>
         @if(!$product->is_in_stock)
             <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
                 <span class="bg-white text-gray-700 font-semibold px-3 py-1 rounded-full text-xs">Out of Stock</span>

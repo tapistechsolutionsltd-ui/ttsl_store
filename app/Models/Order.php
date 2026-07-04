@@ -37,6 +37,11 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function cppClients()
+    {
+        return $this->hasMany(CppClient::class);
+    }
+
     public function getStatusLabelAttribute(): string
     {
         return match ($this->order_status) {
